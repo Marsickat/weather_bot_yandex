@@ -1,0 +1,4 @@
+requests~=2.31.0
+SQLAlchemy~=2.0.19
+psycopg2
+aiogram~=2.25.1
