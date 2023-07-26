@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, ForeignKey, create_engine, select, Table, DateTime, BigInteger
+from sqlalchemy import Column, Integer, String, ForeignKey, create_engine, DateTime, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -22,6 +22,7 @@ class User(Base):
 class WeatherReport(Base):
     __tablename__ = "WeatherReports"
     id = Column(Integer, primary_key=True)
+    owner = Column(Integer, ForeignKey("Users.id"), nullable=False)
     date = Column(DateTime, default=datetime.now(), nullable=False)
     temp = Column(Integer, nullable=False)
     feels_like = Column(Integer, nullable=False)
@@ -33,9 +34,8 @@ class WeatherReport(Base):
         return self.city
 
 
-engine = create_engine("postgresql://postgres:postgres@localhost:5432/postgres", echo=True)
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
+# engine = create_engine("postgresql://postgres:postgres@localhost:5432/postgres", echo=True)
+# Base.metadata.create_all(engine)
+#
+# Session = sessionmaker(bind=engine)
+# session = Session()
