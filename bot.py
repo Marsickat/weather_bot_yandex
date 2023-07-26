@@ -50,7 +50,17 @@ async def get_user_city_weather(message: types.Message):
     markup = types.reply_keyboard.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     btn1 = types.KeyboardButton("Меню")
     markup.add(btn1)
-    text = "Я пока так не умею"
+    city = orm.get_user_city(message.from_user.id)
+    if city is None:
+        text = "Пожалуйста, установите город проживания"
+        markup = types.reply_keyboard.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        btn1 = types.KeyboardButton("Установить свой город")
+        await message.answer(text, reply_markup=markup)
+        return
+    data = request.get_weather(city)
+    orm.create_report(message.from_user.id, data["temp"], data["feels_like"], data["wind_speed"], data["pressure_mm"],
+                      city)
+    text = f"Погода в {city}\nТемпература: {data['temp']} C\nОщущается как: {data['feels_like']} C\nСкорость ветра: {data['wind_speed']} м/с\nДавление: {data['pressure_mm']} мм"
     await message.answer(text, reply_markup=markup)
 
 
@@ -78,6 +88,8 @@ async def city_chosen(message: types.Message, state: FSMContext):
     markup.add(btn1, btn2, btn3, btn4)
     city = await state.get_data()
     data = request.get_weather(city.get("waiting_city"))
+    orm.create_report(message.from_user.id, data["temp"], data["feels_like"], data["wind_speed"], data["pressure_mm"],
+                      city.get("waiting_city"))
     text = f"Погода в {city.get('waiting_city')}\nТемпература: {data['temp']} C\nОщущается как: {data['feels_like']} C\nСкорость ветра: {data['wind_speed']} м/с\nДавление: {data['pressure_mm']} мм"
     await message.answer(text, reply_markup=markup)
     await state.finish()
