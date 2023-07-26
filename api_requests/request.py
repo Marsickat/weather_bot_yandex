@@ -18,6 +18,3 @@ def get_weather(city: str) -> str:
     r = requests.get("https://api.weather.yandex.ru/v2/forecast", params=payload, headers=api_config.weather_key)
     weather_data = json.loads(r.text)
     return weather_data["fact"]
-
-
-print(get_weather("Ставрополь"))
