@@ -150,6 +150,25 @@ async def get_reports(message: types.Message):
 @dp.callback_query_handler(lambda call: True)
 async def callback_query(call, state: FSMContext):
     query_type = call.data.split("_")[0]
+    if query_type == "delete" and call.data.split("_")[1] == "report":
+        report_id = int(call.data.split("_")[2])
+        current_page = 1
+        orm.delete_user_report(report_id)
+        reports = orm.get_reports(call.from_user.id)
+        total_pages = math.ceil(len(reports) / 4)
+        inline_markup = types.InlineKeyboardMarkup()
+        for report in reports[:current_page * 4]:
+            inline_markup.add(types.InlineKeyboardButton(
+                text=f"{report.city} {report.date.day}.{report.date.month}.{report.date.year}",
+                callback_data=f"report_{report.id}"
+            ))
+        current_page += 1
+        inline_markup.row(
+            types.InlineKeyboardButton(text=f"{current_page - 1}/{total_pages}", callback_data="None"),
+            types.InlineKeyboardButton(text="Вперёд", callback_data=f"next_{current_page}")
+        )
+        await call.message.edit_text(text="История запросов:", reply_markup=inline_markup)
+        return
     async with state.proxy() as data:
         data["current_page"] = int(call.data.split("_")[1])
         await state.update_data(current_page=data["current_page"])
